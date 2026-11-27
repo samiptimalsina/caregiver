@@ -14,7 +14,7 @@
                 <div class="col-xl-3 col-lg-4 col-md-6">
                     <div class="footer__widget">
                         <div class="logo mb-35">
-                            <a href="{{ route('home') }}"><img src="{{ !empty($footerSetting?->logo) ? asset($footerSetting?->logo) : asset($setting?->logo) }}" alt="img"></a>
+                            <a href="{{ route('home') }}"><img src="{{ asset($setting?->logo) }}" alt="Logo"></a>
                         </div>
                         <div class="footer__content">
                             <p>{{ $footerSetting?->footer_text }}</p>
