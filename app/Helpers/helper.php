@@ -754,6 +754,10 @@ if (!function_exists('getTags')) {
     {
         $tags = $jsonTag;
         $tags_string = '';
+        if (!is_array($tags) && !is_object($tags)) {
+            return $tags_string;
+        }
+
         foreach ($tags as $tag) {
             $tags_string .= $tag->value . ',';
         }
