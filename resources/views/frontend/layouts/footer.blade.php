@@ -68,16 +68,6 @@
                                 @endforeach
                             </ul>
                         </div>
-                        <div class="app-download">
-                            @if ($footerSetting?->google_play_link)
-                                <a href="{{ $footerSetting->google_play_link }}"><img
-                                        src="{{ asset('frontend/img/others/google-play.svg') }}" alt="img"></a>
-                            @endif
-                            @if ($footerSetting?->apple_store_link)
-                                <a href="{{ $footerSetting->apple_store_link }}"><img
-                                        src="{{ asset('frontend/img/others/apple-store.svg') }}" alt="img"></a>
-                            @endif
-                        </div>
                     </div>
                 </div>
             </div>
