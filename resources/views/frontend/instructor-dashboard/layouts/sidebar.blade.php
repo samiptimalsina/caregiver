@@ -79,14 +79,12 @@
                     {{ __('Jitsi live setting') }}
                 </a>
             </li>
-            @if ($setting?->google_calendar_status == 'active')
-                <li class="{{ Route::is('instructor.google-calendar.index') ? 'active' : '' }}">
-                    <a href="{{ route('instructor.google-calendar.index') }}">
-                        <img src="{{ asset('uploads/website-images/g-calendar.svg') }}">
-                        {{ __('Google Calendar / Meet') }}
-                    </a>
-                </li>
-            @endif
+            <li class="{{ Route::is('instructor.google-calendar.index') ? 'active' : '' }}">
+                <a href="{{ route('instructor.google-calendar.index') }}">
+                    <img src="{{ asset('uploads/website-images/g-calendar.svg') }}">
+                    {{ __('Google Calendar / Meet') }}
+                </a>
+            </li>
             <li class="{{ Route::is('instructor.setting.index') ? 'active' : '' }}">
                 <a href="{{ route('instructor.setting.index') }}">
                     <i class="flaticon-user"></i>

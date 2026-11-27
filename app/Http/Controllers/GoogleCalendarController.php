@@ -11,7 +11,11 @@ class GoogleCalendarController extends Controller {
     public function __construct() {
         $this->middleware(function ($request, $next) {
             $setting = Cache::get('setting');
-            abort_if(!$setting || $setting?->google_calendar_status !== 'active',404);
+            abort_if(
+                (!$setting || $setting?->google_calendar_status !== 'active')
+                && !$request->routeIs('instructor.google-calendar.index'),
+                404
+            );
             return $next($request);
         });
     }

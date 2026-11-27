@@ -12,7 +12,11 @@
                     <p class="text-muted">
                         {{ __('Connect your Google Calendar to add live class events and automatically create Google Meet links for live lessons.') }}
                     </p>
-                    @if (auth('web')->user()->google_access_token)
+                    @if (Cache::get('setting')?->google_calendar_status !== 'active')
+                        <div class="alert alert-warning" role="alert">
+                            {{ __('Google Calendar and automatic Google Meet creation are currently disabled by the site administrator. Contact the administrator to enable this integration.') }}
+                        </div>
+                    @elseif (auth('web')->user()->google_access_token)
                         <div class="alert alert-success">
                             <i class="fas fa-check-circle"></i> {{ __('Google Calendar is connected.') }}
                         </div>
