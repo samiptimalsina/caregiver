@@ -20,7 +20,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="form-group">
-                                        <label>{{ __('Logo') }}  <code>({{ __('Recommended') }}: 150X40 PX)</code></label>
+                                        <label>{{ __('Logo') }} <code>({{ __('Recommended') }}: 150X40 PX)</code></label>
                                         <div id="image-preview" class="image-preview">
                                             <label for="image-upload" id="image-label">{{ __('Image') }}</label>
                                             <input type="file" name="logo" id="image-upload">
