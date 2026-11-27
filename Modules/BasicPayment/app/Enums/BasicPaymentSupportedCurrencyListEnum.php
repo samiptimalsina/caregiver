@@ -1,0 +1,100 @@
+<?php
+
+namespace Modules\BasicPayment\app\Enums;
+
+use Illuminate\Support\Str;
+use Modules\BasicPayment\app\Models\BasicPayment;
+
+enum BasicPaymentSupportedCurrencyListEnum {
+    public static function getStripeSupportedCurrencies(): array {
+        $allCurrencyCodes = [
+            'USD', 'AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN',
+            'BAM', 'BBD', 'BDT', 'BGN', 'BIF', 'BMD', 'BND', 'BOB', 'BRL', 'BSD',
+            'BWP', 'BYN', 'BZD', 'CAD', 'CDF', 'CHF', 'CLP', 'CNY', 'COP', 'CRC',
+            'CVE', 'CZK', 'DJF', 'DKK', 'DOP', 'DZD', 'EGP', 'ETB', 'EUR', 'FJD',
+            'FKP', 'GBP', 'GEL', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD', 'HKD', 'HNL',
+            'HTG', 'HUF', 'IDR', 'ILS', 'INR', 'ISK', 'JMD', 'JPY', 'KES', 'KGS',
+            'KHR', 'KMF', 'KRW', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL',
+            'MAD', 'MDL', 'MGA', 'MKD', 'MMK', 'MNT', 'MOP', 'MUR', 'MVR', 'MWK',
+            'MXN', 'MYR', 'MZN', 'NAD', 'NGN', 'NIO', 'NOK', 'NPR', 'NZD', 'PAB',
+            'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD', 'RUB',
+            'RWF', 'SAR', 'SBD', 'SCR', 'SEK', 'SGD', 'SHP', 'SLE', 'SOS', 'SRD',
+            'STD', 'SZL', 'THB', 'TJS', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH',
+            'UGX', 'UYU', 'UZS', 'VND', 'VUV', 'WST', 'XAF', 'XCD', 'XOF', 'XPF',
+            'YER', 'ZAR', 'ZMW', 'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW',
+            'MGA', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF', 'BHD',
+            'JOD', 'KWD', 'OMR', 'TND',
+        ];
+
+        $nonZeroCurrencyCodes = ['BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF'];
+
+        $threeDigitCurrencyCodes = ['BHD', 'JOD', 'KWD', 'OMR', 'TND'];
+
+        $smallestUnitCurrencyCodes = array_diff($allCurrencyCodes, $nonZeroCurrencyCodes, $threeDigitCurrencyCodes);
+
+        return [
+            'all_currency_codes'           => $allCurrencyCodes,
+            'smallest_unit_currency_codes' => $smallestUnitCurrencyCodes,
+            'non_zero_currency_codes'      => $nonZeroCurrencyCodes,
+            'three_digit_currency_codes'   => $threeDigitCurrencyCodes,
+        ];
+    }
+
+    public static function isStripeSupportedCurrencies($code): bool {
+        return in_array(Str::upper($code), self::getStripeSupportedCurrencies()['all_currency_codes']);
+    }
+
+    public static function getPaypalSupportedCurrencies(): array {
+        return ['AUD', 'BRL', 'CAD', 'CNY', 'CZK', 'DKK', 'EUR', 'HKD', 'HUF', 'ILS', 'JPY', 'MYR', 'MXN', 'TWD', 'NZD', 'NOK', 'PHP', 'PLN', 'GBP', 'SGD', 'SEK', 'CHF', 'THB', 'USD'];
+    }
+
+    public static function isPaypalSupportedCurrencies($code): bool {
+        return in_array(Str::upper($code), self::getPaypalSupportedCurrencies());
+    }
+    public static function getMpesaSupportedCurrencies() {
+        $basic_payment = cache()->get('basic_payment');
+
+        if (!$basic_payment) {
+
+            $payment_info = BasicPayment::get();
+
+            $basic_payment = [];
+            foreach ($payment_info as $payment_item) {
+                $basic_payment[$payment_item->key] = $payment_item->value;
+            }
+
+            // Cache it for next use (optional but recommended)
+            cache()->put('basic_payment', (object) $basic_payment, now()->addMinutes(10));
+        }
+
+        $countryToCurrency = [
+            'GHA' => ['GHS'],
+            'TZN' => ['TZS'],
+            'LES' => ['LSL'],
+            'DRC' => ['USD'],
+            'MOZ' => ['MZN'],
+        ];
+
+        return $countryToCurrency[$basic_payment?->mpesa_country] ?? ['GHS'];
+    }
+
+    public static function isMpesaSupportedCurrencies($code): bool {
+        return in_array(Str::upper($code), self::getMpesaSupportedCurrencies());
+    }
+    public static function getTwoCheckoutSupportedCurrencies(): array {
+        return ['AED','AFN','ALL','ARS','AUD','AZN','BBD','BDT','BGN','BHD','BMD','BND',
+        'BOB','BRL','BSD','BWP','BZD','BND','CAD','CHF','CNY','COP','CRC','CZK',
+        'DKK','DOP','DZD','EGP','EUR','FJD','GBP','GTQ','HKD','HNL','HRK','HTG',
+        'HUF','IDR','ILS','INR','JMD','JOD','JPY','KES','KGS','KHR','KPW','KRW',
+        'KWD','KZT','LAK','LBP','LKR','LSL','MAD','MDL','MMK','MNT','MOP','MRU',
+        'MUR','MVR','MXN','MYR','NAD','NGN','NIO','NOK','NPR','NZD','OMR','PAB',
+        'PEN','PGK','PHP','PKR','PLN','PYG','QAR','RON','RSD','RUB','SAR','SBD',
+        'SCR','SEK','SGD','SHP','SLL','SOS','SRD','SVC','SYP','THB','TND','TOP',
+        'TRY','TTD','TWD','UAH','UGX','USD','UYU','UZS','VEF','VND','VUV','WST',
+        'XCD','XOF','YER','ZAR','BYN','MDL','KRW'];
+    }
+
+    public static function isTwoCheckoutSupportedCurrencies($code): bool {
+        return in_array(Str::upper($code), self::getTwoCheckoutSupportedCurrencies());
+    }
+}
