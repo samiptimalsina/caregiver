@@ -153,7 +153,7 @@ $(document).ready(function () {
                             if (
                                 ["zoom", "google_meet"].includes(file_info.live.type) && file_info.live.join_url
                             ) {
-                                btnHtml += `<a target="_blank" href="${file_info.live.join_url}" class="btn">${j_class_txt}</a>`;
+                                btnHtml += `<a target="_blank" rel="noopener noreferrer" href="${file_info.live.join_url}" class="btn">${j_class_txt}</a>`;
                             }
                         } else if (file_info.is_live_now == "ended") {
                             btnHtml = `<h6>${le_fi_he}</h6>`;

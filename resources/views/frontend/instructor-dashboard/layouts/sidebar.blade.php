@@ -83,7 +83,7 @@
                 <li class="{{ Route::is('instructor.google-calendar.index') ? 'active' : '' }}">
                     <a href="{{ route('instructor.google-calendar.index') }}">
                         <img src="{{ asset('uploads/website-images/g-calendar.svg') }}">
-                        {{ __('Calendar') }}
+                        {{ __('Google Calendar / Meet') }}
                     </a>
                 </li>
             @endif

@@ -34,7 +34,7 @@
             <div class="col-md-3">
                 <div class="form-grp">
                     <label for="live_type">{{ __('Live Platform') }} <code>*</code></label>
-                    <select name="live_type" id="live_type" class="form-select">
+                    <select name="live_type" id="live_type" class="form-select" data-current-live-type="zoom">
                         @foreach (config('course.live_types') as $key => $value)
                             <option value="{{ $key }}">{{ $value }}</option>
                         @endforeach
@@ -65,6 +65,14 @@
             <div class="alert alert-warning" role="alert">
                 {{__('The meeting ID and Jitsi settings must be configured. The course creator needs to set up the')}}
                 <a href="{{ route('instructor.jitsi-setting.index') }}">{{ __('Jitsi setting') }}</a>.
+            </div>
+        </div>
+        <div class="col-12 google-meet-alert-box d-none">
+            <div class="alert alert-info" role="alert">
+                {{ __('Leave the Join URL blank to create a Google Meet link automatically when your Google Calendar is connected. Otherwise, paste a Google Meet URL. Students join in Google Meet in a new tab.') }}
+                @if (Cache::get('setting')?->google_calendar_status === 'active')
+                    <a href="{{ route('instructor.google-calendar.index') }}">{{ __('Google Calendar settings') }}</a>.
+                @endif
             </div>
         </div>
         <div class="row">

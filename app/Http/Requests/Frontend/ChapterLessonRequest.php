@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Frontend;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Cache;
 
 class ChapterLessonRequest extends FormRequest
 {
@@ -75,7 +76,7 @@ class ChapterLessonRequest extends FormRequest
             'title' => ['required', 'max:255'],
             'description' => ['nullable', 'max:10000'],
             'duration' => ['required', 'numeric', 'min:0'],
-            'live_type' => ['required'],
+            'live_type' => ['required', 'in:zoom,jitsi,google_meet'],
             'start_time' => 'required',
         ];
         if (!$this->live_status && !empty($this->source)) {
@@ -90,7 +91,14 @@ class ChapterLessonRequest extends FormRequest
             $rules['join_url'] = ['sometimes'];
         }
         if ($this->live_type == 'google_meet') {
-            $rules['join_url'] = ['required'];
+            $canCreateMeet = Cache::get('setting')?->google_calendar_status === 'active'
+                && filled(auth('web')->user()?->google_access_token);
+
+            $rules['join_url'] = [
+                $canCreateMeet ? 'nullable' : 'required',
+                'url:https',
+                'regex:/^https:\/\/meet\.google\.com\//i',
+            ];
         }
 
         return $rules;
@@ -137,6 +145,8 @@ class ChapterLessonRequest extends FormRequest
             'meeting_id.required' => __('Meeting ID is required'),
             'password.required' => __('Password is required'),
             'join_url.required' => __('Join URL is required'),
+            'join_url.url' => __('Enter a valid Google Meet URL'),
+            'join_url.regex' => __('The URL must be a Google Meet link'),
             'title.string' => __('The title must be a string.'),
             'description.string' => __('The description must be a string.'),
             'instructions.string' => __('The instructions must be a string.'),

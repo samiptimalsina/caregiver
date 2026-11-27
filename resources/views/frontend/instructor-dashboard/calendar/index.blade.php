@@ -3,13 +3,14 @@
 @section('dashboard-contents')
     <div class="dashboard__content-wrap">
         <div class="dashboard__content-title">
-            <h4 class="title">{{ __('Google Calendar Connect') }}</h4>
+            <h4 class="title">{{ __('Google Calendar and Meet') }}</h4>
         </div>
         <div class="row">
             <div class="col-lg-12">
                 <div class="form-group">
                     <label>{{ __('Google Calendar') }}</label>
-                    <p class="text-muted">{{ __('Connect your Google Calendar to automatically add live class events.') }}
+                    <p class="text-muted">
+                        {{ __('Connect your Google Calendar to add live class events and automatically create Google Meet links for live lessons.') }}
                     </p>
                     @if (auth('web')->user()->google_access_token)
                         <div class="alert alert-success">

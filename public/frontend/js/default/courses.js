@@ -240,7 +240,10 @@ $(document).ready(function () {
         const $joinUrl = $(".join-url-box");
         const $zoomAlert = $(".zoom-alert-box");
         const $jitsiAlert = $(".jitsi-alert-box");
+        const $googleMeetAlert = $(".google-meet-alert-box");
         const $joinCode = $joinUrl.find('label code');
+        const $joinUrlInput = $joinUrl.find('input[name="join_url"]');
+        const previousLiveType = $(this).data("current-live-type");
 
         // Reset all to default state
         $meetingId.removeClass('d-none col-md-12').addClass('col-md-6');
@@ -248,6 +251,7 @@ $(document).ready(function () {
         $joinUrl.removeClass('d-none');
         $zoomAlert.addClass('d-none');
         $jitsiAlert.addClass('d-none');
+        $googleMeetAlert.addClass('d-none');
         $joinCode.addClass('d-none');
 
         // Apply specific logic
@@ -261,10 +265,20 @@ $(document).ready(function () {
             $meetingId.addClass('d-none');
             $meetingPassword.addClass('d-none');
             $joinCode.removeClass('d-none');
+            $googleMeetAlert.removeClass('d-none');
+            const currentJoinUrl = String($joinUrlInput.val() || '');
+            if (previousLiveType !== 'google_meet' && !currentJoinUrl.startsWith('https://meet.google.com/')) {
+                $joinUrlInput.val('');
+            }
 
         } else { // zoom or default
             $zoomAlert.removeClass('d-none');
         }
+
+        if (previousLiveType === 'google_meet' && liveType !== 'google_meet') {
+            $joinUrlInput.val('');
+        }
+        $(this).data("current-live-type", liveType);
     });
 
     /** load edit chapter modal */

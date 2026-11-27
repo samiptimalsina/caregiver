@@ -36,7 +36,8 @@
             <div class="col-md-3">
                 <div class="form-grp">
                     <label for="live_type">{{ __('Live Platform') }} <code>*</code></label>
-                    <select name="live_type" id="live_type" class="form-select">
+                    <select name="live_type" id="live_type" class="form-select"
+                        data-current-live-type="{{ $chapterItem->lesson->live->type }}">
                         @foreach (config('course.live_types') as $key => $value)
                             <option @selected($chapterItem->lesson->live->type == $key) value="{{ $key }}">{{ $value }}
                             </option>
@@ -71,6 +72,14 @@
                 <a href="{{ route('instructor.jitsi-setting.index') }}">{{ __('Jitsi setting') }}</a>.
             </div>
         </div>
+        <div class="col-12 google-meet-alert-box {{ $chapterItem->lesson->live->type == 'google_meet' ? '' : 'd-none' }}">
+            <div class="alert alert-info" role="alert">
+                {{ __('Leave the Join URL blank to create a Google Meet link automatically when your Google Calendar is connected. Otherwise, paste a Google Meet URL. Students join in Google Meet in a new tab.') }}
+                @if (Cache::get('setting')?->google_calendar_status === 'active')
+                    <a href="{{ route('instructor.google-calendar.index') }}">{{ __('Google Calendar settings') }}</a>.
+                @endif
+            </div>
+        </div>
         <div class="row">
             <div
                 class="col-md-{{ $chapterItem->lesson->live->type == 'jitsi' ? '12' : '6' }} {{ $chapterItem->lesson->live->type == 'google_meet' ? 'd-none' : '' }} meeting-id-box">
@@ -89,7 +98,7 @@
             <div class="col-md-12 join-url-box {{ $chapterItem->lesson->live->type == 'jitsi' ? 'd-none' : '' }}">
                 <div class="form-grp">
                     <label for="join_url">{{ __('Join URL') }} <code
-                            class="{{ $chapterItem->lesson->live->type == 'google_meet' ? '' : 'd-none' }}">*</code></label>
+                            class="d-none">*</code></label>
                     <input id="join_url" name="join_url" type="url" value="{{ $chapterItem->lesson->live->join_url }}">
                 </div>
             </div>

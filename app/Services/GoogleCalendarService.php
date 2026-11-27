@@ -5,9 +5,11 @@ namespace App\Services;
 use Carbon\Carbon;
 use Google\Client;
 use Google\Service\Calendar;
+use Google\Service\Calendar\ConferenceData;
 use Google\Service\Calendar\Event;
 use Google\Service\Calendar\EventDateTime;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class GoogleCalendarService {
     protected Client $client;
@@ -65,7 +67,7 @@ class GoogleCalendarService {
      * CREATE EVENT
      * =========================
      */
-    public function createEvent(array $payload): ?string {
+    public function createEvent(array $payload): ?array {
         try {
             $eventData = $this->buildEventPayload($payload);
 
@@ -76,9 +78,14 @@ class GoogleCalendarService {
                 $event,
                 ['conferenceDataVersion' => 1]
             );
+            $joinUrl = !empty($payload['meet']) ? $this->waitForMeetUrl($created) : $this->getMeetUrl($created);
 
-            return $created->getId();
+            return [
+                'id' => $created->getId(),
+                'join_url' => $joinUrl,
+            ];
         } catch (\Exception $e) {
+            report($e);
             return null;
         }
     }
@@ -88,7 +95,7 @@ class GoogleCalendarService {
      * UPDATE EVENT
      * =========================
      */
-    public function updateEvent(string $eventId, array $payload): bool {
+    public function updateEvent(string $eventId, array $payload): ?array {
         try {
             $event = $this->calendar->events->get('primary', $eventId);
 
@@ -118,11 +125,32 @@ class GoogleCalendarService {
                 ]));
             }
 
-            $this->calendar->events->update('primary', $eventId, $event);
+            if (!empty($payload['meet'])) {
+                $event->setConferenceData(new ConferenceData([
+                    'createRequest' => [
+                        'requestId' => (string) Str::uuid(),
+                        'conferenceSolutionKey' => [
+                            'type' => 'hangoutsMeet',
+                        ],
+                    ],
+                ]));
+            }
 
-            return true;
+            $updated = $this->calendar->events->update(
+                'primary',
+                $eventId,
+                $event,
+                ['conferenceDataVersion' => 1]
+            );
+            $joinUrl = !empty($payload['meet']) ? $this->waitForMeetUrl($updated) : $this->getMeetUrl($updated);
+
+            return [
+                'id' => $updated->getId(),
+                'join_url' => $joinUrl,
+            ];
         } catch (\Exception $e) {
-            return false;
+            report($e);
+            return null;
         }
     }
 
@@ -194,7 +222,7 @@ class GoogleCalendarService {
         if (!empty($payload['meet'])) {
             $event['conferenceData'] = [
                 'createRequest' => [
-                    'requestId'             => uniqid(),
+                    'requestId'             => (string) Str::uuid(),
                     'conferenceSolutionKey' => [
                         'type' => 'hangoutsMeet',
                     ],
@@ -203,6 +231,31 @@ class GoogleCalendarService {
         }
 
         return $event;
+    }
+
+    private function getMeetUrl(Event $event): ?string {
+        if ($event->getHangoutLink()) {
+            return $event->getHangoutLink();
+        }
+
+        foreach ($event->getConferenceData()?->getEntryPoints() ?? [] as $entryPoint) {
+            if ($entryPoint->getEntryPointType() === 'video' && $entryPoint->getUri()) {
+                return $entryPoint->getUri();
+            }
+        }
+
+        return null;
+    }
+
+    private function waitForMeetUrl(Event $event): ?string {
+        $joinUrl = $this->getMeetUrl($event);
+        for ($attempt = 0; !$joinUrl && $event->getId() && $attempt < 4; $attempt++) {
+            usleep(500_000);
+            $event = $this->calendar->events->get('primary', $event->getId());
+            $joinUrl = $this->getMeetUrl($event);
+        }
+
+        return $joinUrl;
     }
 
     protected function toRFC3339(string $dateTime): string {

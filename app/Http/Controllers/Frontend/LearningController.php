@@ -330,6 +330,19 @@ class LearningController extends Controller
             }
         ])->findOrFail($lesson_id);
 
+        if ($lesson->live->type === 'google_meet') {
+            $meetUrl = $lesson->live->join_url;
+            if (
+                filter_var($meetUrl, FILTER_VALIDATE_URL)
+                && parse_url($meetUrl, PHP_URL_SCHEME) === 'https'
+                && parse_url($meetUrl, PHP_URL_HOST) === 'meet.google.com'
+            ) {
+                return redirect()->away($meetUrl);
+            }
+
+            return redirect()->route('student.learning.index', $slug);
+        }
+
         if ($lesson->live->type == 'zoom') {
             return view('frontend.pages.learning-player.partials.live.zoom', compact('lesson'));
         } else {

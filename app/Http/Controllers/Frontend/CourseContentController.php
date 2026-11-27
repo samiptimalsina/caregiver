@@ -18,6 +18,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Modules\Assignment\app\Services\AssignmentService;
 use Modules\Order\app\Models\Enrollment;
 
@@ -209,7 +210,21 @@ class CourseContentController extends Controller
             ]);
 
             // Add to Google Calendar if instructor has connected
-            $this->createCalendarEvent($request->course_id, $start_time, $chapter_lesson, $liveClass);
+            $calendarEvent = $this->createCalendarEvent($request->course_id, $start_time, $chapter_lesson, $liveClass);
+            $join_url = $liveClass->fresh()->join_url;
+            if ($liveClass->type === 'google_meet' && blank($join_url)) {
+                if (blank($calendarEvent['join_url'] ?? null)) {
+                    $liveClass->delete();
+                    $chapter_lesson->delete();
+                    $chapterItem->delete();
+
+                    throw ValidationException::withMessages([
+                        'join_url' => __('Google Meet could not be created. Reconnect Google Calendar or enter a Meet URL manually.'),
+                    ]);
+                }
+
+                $join_url = $calendarEvent['join_url'];
+            }
 
             if ($request?->student_mail_sent == 'on') {
                 $user_ids = Enrollment::where('course_id', $chapter_lesson->course_id)->pluck('user_id')->toArray();
@@ -338,7 +353,18 @@ class CourseContentController extends Controller
             ]);
 
             // Update Google Calendar if instructor has connected
-            $this->updateCalendarEvent($start_time, $courseChapterLesson, $liveClass);
+            $calendarEvent = $this->updateCalendarEvent($start_time, $courseChapterLesson, $liveClass);
+            $join_url = $liveClass->fresh()->join_url;
+            if ($liveClass->type === 'google_meet' && blank($join_url)) {
+                if (blank($calendarEvent['join_url'] ?? null)) {
+                    throw ValidationException::withMessages([
+                        'join_url' => __('Google Meet could not be created. Reconnect Google Calendar or enter a Meet URL manually.'),
+                    ]);
+                }
+
+                $join_url = $calendarEvent['join_url'];
+                $liveClass->update(['join_url' => $join_url]);
+            }
 
             if ($request?->student_mail_sent == 'on') {
                 $user_ids = Enrollment::where('course_id', $courseChapterLesson->course_id)->pluck('user_id')->toArray();
@@ -536,10 +562,11 @@ class CourseContentController extends Controller
         return response()->json(['status' => 'success', 'message' => __('Question deleted successfully')]);
     }
 
-    private function createCalendarEvent($courseId, $start_time, $chapter_lesson, $liveClass): void
+    private function createCalendarEvent($courseId, $start_time, $chapter_lesson, $liveClass): ?array
     {
         $setting = Cache::get('setting');
-        if ($setting?->google_calendar_status == 'active') {
+        $instructor = auth('web')->user();
+        if ($setting?->google_calendar_status == 'active' && filled($instructor?->google_access_token)) {
             try {
                 $course = Course::select('title', 'slug')->where('id', $courseId)->first();
                 $attendees = Enrollment::where('course_id', $courseId)
@@ -559,33 +586,56 @@ class CourseContentController extends Controller
                     Timezone: {$setting?->timezone}
                     Lesson URL: {$lessonUrl}
                     TEXT;
+                if (filled($liveClass->join_url)) {
+                    $calendarDescription .= "\nJoin URL: {$liveClass->join_url}";
+                }
 
-                $eventId = $calendarService->createEvent([
+                $createMeet = $liveClass->type === 'google_meet' && blank($liveClass->join_url);
+                $event = $calendarService->createEvent([
                     'summary' => $chapter_lesson->title,
                     'description' => $calendarDescription,
                     'start' => $startTime->format('Y-m-d H:i:s'),
                     'end' => $endTime->format('Y-m-d H:i:s'),
-                    'meet' => false,
+                    'meet' => $createMeet,
                     'attendees' => $attendees,
                 ]);
 
-                if ($eventId) {
-                    $liveClass->update([
-                        'google_event_id' => $eventId,
-                    ]);
+                if (!$event) {
+                    return null;
                 }
+
+                if ($createMeet && blank($event['join_url'])) {
+                    $calendarService->deleteEvent($event['id']);
+                    return null;
+                }
+
+                $updates = ['google_event_id' => $event['id']];
+                if ($createMeet) {
+                    $updates['join_url'] = $event['join_url'];
+                }
+                $liveClass->update($updates);
+
+                return $updates;
             } catch (\Exception $e) {
+                report($e);
             }
         }
+
+        return null;
     }
-    private function updateCalendarEvent($start_time, $chapter_lesson, $liveClass): void
+    private function updateCalendarEvent($start_time, $chapter_lesson, $liveClass): ?array
     {
         $setting = Cache::get('setting');
-        if ($setting?->google_calendar_status == 'active') {
+        $instructor = auth('web')->user();
+        if ($setting?->google_calendar_status == 'active' && filled($instructor?->google_access_token)) {
             try {
                 $course = $chapter_lesson?->course;
                 $start_time = \Carbon\Carbon::parse($start_time, $setting?->timezone);
                 $endTime = $start_time->copy()->addMinutes((int) $chapter_lesson->duration);
+
+                if (blank($liveClass?->google_event_id)) {
+                    return $this->createCalendarEvent($chapter_lesson->course_id, $start_time, $chapter_lesson, $liveClass);
+                }
 
                 $calendarService = GoogleCalendarService::forInstructor(auth('web')->user());
 
@@ -597,16 +647,35 @@ class CourseContentController extends Controller
                     Timezone: {$setting?->timezone}
                     Lesson URL: {$lessonUrl}
                     TEXT;
+                if (filled($liveClass->join_url)) {
+                    $calendarDescription .= "\nJoin URL: {$liveClass->join_url}";
+                }
 
-                $calendarService->updateEvent($liveClass?->google_event_id ?? '', [
+                $createMeet = $liveClass->type === 'google_meet' && blank($liveClass->join_url);
+                $event = $calendarService->updateEvent($liveClass->google_event_id, [
                     'summary' => $chapter_lesson->title,
                     'description' => $calendarDescription,
                     'start' => $start_time->toDateTimeString(),
                     'end' => $endTime->toDateTimeString(),
+                    'meet' => $createMeet,
                 ]);
+
+                if (!$event) {
+                    return null;
+                }
+
+                if ($createMeet && filled($event['join_url'])) {
+                    $liveClass->update(['join_url' => $event['join_url']]);
+                    return $event;
+                }
+
+                return ['id' => $event['id'], 'join_url' => null];
             } catch (\Exception $e) {
+                report($e);
             }
         }
+
+        return null;
     }
     private function destroyCalendarEvent($chapterItem): void
     {
