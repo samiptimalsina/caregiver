@@ -1,1 +1,0 @@
-var e=``+new URL(`testi_author01-DfgswIgp.webp`,import.meta.url).href;export{e as t};

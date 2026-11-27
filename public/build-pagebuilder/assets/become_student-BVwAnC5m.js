@@ -1,1 +1,0 @@
-var e=``+new URL(`become_student-DlNbOxgQ.webp`,import.meta.url).href;export{e as t};

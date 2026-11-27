@@ -1,1 +1,0 @@
-var e=``+new URL(`theme_university_features_icon_4-Dwro2KiL.svg`,import.meta.url).href;export{e as t};

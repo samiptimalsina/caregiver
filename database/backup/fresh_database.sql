@@ -2472,7 +2472,7 @@ INSERT INTO `sections` (`id`, `home_id`, `name`, `global_content`, `status`, `cr
 (33, 5, 'faq_section', '{\"image\": \"uploads/custom-images/theme_yoga_faq.png\"}', 1, '2024-10-15 15:42:24', '2024-10-15 15:42:24'),
 (34, 6, 'hero_section', '{\"banner_image\": \"uploads/custom-images/h8_hero_img.png\", \"hero_background\": \"uploads/custom-images/h8_hero_bg.jpg\", \"banner_background\": \"uploads/custom-images/h8_hero_img_shape.svg\", \"banner_background_two\": \"uploads/custom-images/h8_hero_img_shape02.svg\", \"enroll_students_image\": \"uploads/custom-images/theme_kitchen_enroll_students_image.png\"}', 1, '2024-10-15 15:42:24', '2024-10-15 15:42:24'),
 (35, 6, 'our_features_section', '{\"image_one\": \"uploads/custom-images/theme_kitchen_features_icon_1.png\", \"image_two\": \"uploads/custom-images/theme_kitchen_features_icon_2.png\", \"image_four\": \"uploads/custom-images/theme_kitchen_features_icon_4.png\", \"image_three\": \"uploads/custom-images/theme_kitchen_features_icon_3.png\"}', 1, '2024-10-15 15:42:24', '2024-10-15 15:42:24'),
-(36, 6, 'about_section', '{\"image\": \"uploads/custom-images/h8_about_img01.jpg\", \"image_two\": \"uploads/custom-images/h8_about_img02.jpg\", \"video_url\": \"https://www.youtube.com/watch?v=VkBnNxneA_A\", \"button_url\": \"/about-us\", \"image_three\": \"uploads/custom-images/skillgro-diploma.png\", \"course_success\": \"86\"}', 1, '2024-10-15 15:42:24', '2024-10-15 15:42:24'),
+(36, 6, 'about_section', '{\"image\": \"uploads/custom-images/h8_about_img01.jpg\", \"image_two\": \"uploads/custom-images/h8_about_img02.jpg\", \"video_url\": \"https://www.youtube.com/watch?v=VkBnNxneA_A\", \"button_url\": \"/about-us\", \"image_three\": \"uploads/custom-images/Nirvan-diploma.png\", \"course_success\": \"86\"}', 1, '2024-10-15 15:42:24', '2024-10-15 15:42:24'),
 (37, 6, 'banner_section', '{\"student_image\": \"uploads/custom-images/h8_cta_img.png\"}', 1, '2024-10-15 15:42:24', '2024-10-15 15:42:24'),
 (38, 6, 'faq_section', '{\"image\": \"uploads/custom-images/theme_kitchen_faq.png\"}', 1, '2024-10-15 15:42:24', '2024-10-15 15:42:24'),
 (39, 6, 'newsletter_section', '{\"image\": \"uploads/custom-images/theme_kitchen_newslettter.png\"}', 1, '2024-10-15 15:42:24', '2024-10-15 15:42:24'),
@@ -2583,7 +2583,7 @@ CREATE TABLE IF NOT EXISTS `settings` (
 --
 
 INSERT INTO `settings` (`id`, `key`, `value`, `created_at`, `updated_at`) VALUES
-(1, 'app_name', 'SkillGro', '2024-06-03 02:02:30', '2024-06-25 00:17:45'),
+(1, 'app_name', 'Nirvan', '2024-06-03 02:02:30', '2024-06-25 00:17:45'),
 (2, 'version', '3.4.0', '2024-06-03 02:02:30', '2024-06-03 02:02:30'),
 (3, 'logo', 'uploads/website-images/logo.svg', '2024-06-03 02:02:30', '2024-06-04 06:28:37'),
 (4, 'timezone', 'Africa/Abidjan', '2024-06-03 02:02:30', '2024-06-25 00:17:45'),

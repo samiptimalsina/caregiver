@@ -1,1 +1,0 @@
-var e=``+new URL(`about_img-C4SLonO8.png`,import.meta.url).href,t=``+new URL(`about_shape-DJ4PrPKN.svg`,import.meta.url).href;export{e as n,t};
