@@ -11,7 +11,10 @@ class TestimonialHelper {
         $cacheKey = "testimonials_{$lang}";
 
         return Cache::remember($cacheKey, now()->addHours($hours), function () use ($lang) {
-            return Testimonial::selectRaw("testimonials.image, testimonials.rating, t.name as translation_name, t.comment as translation_comment, t.designation as translation_designation")
+            return Testimonial::selectRaw(
+                "COALESCE(NULLIF(testimonials.image, ''), ?) as image, testimonials.rating, t.name as translation_name, t.comment as translation_comment, t.designation as translation_designation",
+                ['uploads/website-images/default-avatar.png'],
+            )
                 ->leftJoin('testimonial_translations as t', function ($q) use ($lang) {
                     $q->on('t.testimonial_id', '=', 'testimonials.id')
                         ->where('t.lang_code', $lang);

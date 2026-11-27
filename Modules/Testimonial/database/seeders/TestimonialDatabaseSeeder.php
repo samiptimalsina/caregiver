@@ -18,7 +18,7 @@ class TestimonialDatabaseSeeder extends Seeder
 
         for ($i = 0; $i < 20; $i++) {
             $data = new Testimonial();
-            $data->image = "website/images/client_img_{$faker->randomElement(['1', '2', '3'])}.jpg" ?? $faker->imageUrl;
+            $data->image = 'uploads/website-images/default-avatar.png';
             $data->rating = $faker->numberBetween(1, 5);
             $data->status = $faker->randomElement([true, false]);
             if ($data->save()) {
